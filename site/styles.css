@@ -1,0 +1,475 @@
+:root {
+  --bg: #0b0c0e;
+  --surface: #13151a;
+  --surface-2: #1b1e25;
+  --line: #2c3039;
+  --text: #ebe8e1;
+  --muted: #9b998f;
+  --accent: #f5c518;
+  --accent-ink: #14120a;
+  --hazard: #e5484d;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --sans: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* ---------- Header & footer ---------- */
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 24px;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.brand-kicker {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.brand-name {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.tagline {
+  margin: 0;
+  color: var(--muted);
+}
+
+.site-footer {
+  padding: 16px 24px 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ---------- Layout ---------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: 24px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.map-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+#map {
+  display: block;
+  width: 100%;
+  max-height: calc(100vh - 140px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 24px;
+  align-self: start;
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  outline: none;
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+  .site-header,
+  .site-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .panel {
+    position: static;
+    max-height: none;
+  }
+  #map {
+    max-height: none;
+  }
+}
+
+/* ---------- Map ---------- */
+
+.backdrop,
+.connections {
+  pointer-events: none;
+}
+
+.ring-band {
+  fill: none;
+  stroke: var(--surface-2);
+}
+
+.ring-edge,
+.slice,
+.spoke {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2;
+}
+
+.spire {
+  fill: var(--surface-2);
+  stroke: var(--line);
+  stroke-width: 2;
+}
+
+.choke-zone {
+  fill: url(#hazard-stripes);
+  stroke: var(--hazard);
+  stroke-width: 2;
+  stroke-dasharray: 10 8;
+  opacity: 0.85;
+}
+
+.area-label {
+  font-family: var(--mono);
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  fill: var(--muted);
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.area-label.hazard {
+  fill: var(--hazard);
+}
+
+.connection {
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 2 10;
+  stroke-linecap: round;
+  opacity: 0.55;
+  transition: opacity 0.15s, stroke 0.15s;
+}
+
+.marker {
+  cursor: pointer;
+  outline: none;
+}
+
+.marker-dot {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 3;
+  transition: fill 0.15s, r 0.15s;
+}
+
+.marker-num {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 20px;
+  fill: var(--accent);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.marker-label {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  fill: var(--text);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+
+.marker.is-hazard .marker-dot {
+  stroke: var(--hazard);
+}
+.marker.is-hazard .marker-num {
+  fill: var(--hazard);
+}
+
+.marker:hover .marker-dot,
+.marker:focus-visible .marker-dot {
+  fill: var(--surface-2);
+}
+
+.marker:focus-visible .marker-dot {
+  stroke-width: 6;
+}
+
+/* When something is selected, dim everything that isn't related to it. */
+#map.has-selection .marker {
+  opacity: 0.35;
+}
+#map.has-selection .connection {
+  opacity: 0.12;
+}
+#map.has-selection .marker.is-selected,
+#map.has-selection .marker.is-linked {
+  opacity: 1;
+}
+#map.has-selection .connection.is-active {
+  opacity: 1;
+  stroke: var(--accent);
+}
+.marker.is-selected .marker-dot {
+  fill: var(--accent);
+}
+.marker.is-selected .marker-num {
+  fill: var(--accent-ink);
+}
+.marker.is-hazard.is-selected .marker-dot {
+  fill: var(--hazard);
+}
+
+/* Labels get too small to read on narrow screens; the numbered legend covers it. */
+@media (max-width: 600px) {
+  .marker-label {
+    display: none;
+  }
+  .marker-dot {
+    r: 28px;
+  }
+  .marker-num {
+    font-size: 26px;
+  }
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  max-width: 260px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 14px;
+  pointer-events: none;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
+.tooltip strong {
+  display: block;
+  font-family: var(--mono);
+}
+
+/* ---------- Legend ---------- */
+
+.legend {
+  margin-top: 16px;
+}
+
+.legend-title {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.legend ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 4px 16px;
+}
+
+.legend a {
+  display: flex;
+  gap: 10px;
+  padding: 4px 0;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.legend a:hover .legend-name,
+.legend a[aria-current="true"] .legend-name {
+  color: var(--accent);
+}
+
+.legend-num {
+  font-family: var(--mono);
+  color: var(--muted);
+  min-width: 2ch;
+}
+
+/* ---------- Panel ---------- */
+
+.panel-kicker {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 4px;
+}
+
+.panel-kicker.hazard {
+  color: var(--hazard);
+}
+
+.panel h1 {
+  font-family: var(--mono);
+  font-size: 26px;
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+
+.panel .summary {
+  color: var(--muted);
+  font-style: italic;
+  margin: 0 0 16px;
+}
+
+.panel h2 {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  margin: 24px 0 10px;
+}
+
+.panel .body p:first-child {
+  margin-top: 0;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.stat {
+  background: var(--surface-2);
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+
+.stat dt {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stat dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.chip:hover,
+.chip:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.people a {
+  display: block;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.people a:hover,
+.people a:focus-visible {
+  border-color: var(--accent);
+}
+
+.people .role {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-family: var(--mono);
+  font-size: 13px;
+  text-decoration: none;
+}

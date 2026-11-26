@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prospero's Dream Station Map</title>
+    <meta name="description" content="An interactive map of the Prospero's Dream space station for Mothership players." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#">
+        <span class="brand-kicker">Station directory</span>
+        <span class="brand-name">Prospero's Dream</span>
+      </a>
+      <p class="tagline" id="tagline"></p>
+    </header>
+
+    <main class="layout">
+      <section class="map-wrap" aria-label="Station map">
+        <svg id="map" viewBox="0 0 1000 1000" role="group" aria-label="Map of Prospero's Dream"></svg>
+        <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+        <nav class="legend" aria-label="All locations">
+          <h2 class="legend-title">Locations</h2>
+          <ol id="legend-list"></ol>
+        </nav>
+      </section>
+
+      <aside class="panel" id="panel" aria-live="polite" tabindex="-1"></aside>
+    </main>
+
+    <footer class="site-footer">
+      Unofficial fan project for players. Mothership® and <em>A Pound of Flesh</em> are © Tuesday Knight Games. This
+      site is not affiliated with Tuesday Knight Games.
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
