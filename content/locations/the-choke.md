@@ -3,7 +3,7 @@ name: The Choke
 number: 10
 area: the-choke
 summary: The abandoned, quarantined depths of the station. Keep out.
-map: { x: 500, y: 870 }
+placement: { angle: 0, distance: 0, level: -0.75 }
 connects_to: []
 factions: []
 ---

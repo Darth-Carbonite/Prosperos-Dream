@@ -14,7 +14,8 @@ const contentDir = path.join(root, "content");
 const siteDir = path.join(root, "site");
 const distDir = path.join(root, "dist");
 
-const AREAS = ["outer-ring", "ring-structures", "center-spire", "the-choke"];
+const AREAS = ["outer-ring", "spokes", "hub", "center-spire", "the-choke"];
+const MODULES = ["block", "tower", "cluster", "none"];
 const errors = [];
 
 function fail(file, message) {
@@ -85,8 +86,19 @@ for (const loc of locations) {
   if (!AREAS.includes(loc.area)) {
     fail(loc.file, `\`area:\` must be one of: ${AREAS.join(", ")}`);
   }
-  if (!loc.map || typeof loc.map.x !== "number" || typeof loc.map.y !== "number") {
-    fail(loc.file, "missing map position, e.g. `map: { x: 500, y: 100 }`");
+  const p = loc.placement;
+  if (!p || typeof p.angle !== "number") {
+    fail(loc.file, "missing `placement:` with an angle, e.g. `placement: { angle: 90 }`");
+  } else {
+    if (p.distance !== undefined && (typeof p.distance !== "number" || p.distance < 0 || p.distance > 1)) {
+      fail(loc.file, "`placement` distance must be a number from 0 (center) to 1 (the ring)");
+    }
+    if (p.level !== undefined && (typeof p.level !== "number" || p.level < -1 || p.level > 0)) {
+      fail(loc.file, "`placement` level must be a number from 0 (top of the spire) to -1 (the bottom)");
+    }
+  }
+  if (loc.module !== undefined && !MODULES.includes(loc.module)) {
+    fail(loc.file, `\`module:\` must be one of: ${MODULES.join(", ")}`);
   }
   if (loc.number !== undefined) {
     if (numbers.has(loc.number)) {

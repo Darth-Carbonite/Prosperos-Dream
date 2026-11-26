@@ -1,19 +1,19 @@
 // Prospero's Dream station map.
 // All content comes from data.json, which the build script makes from the
 // Markdown files in content/. You shouldn't need to edit this file to add
-// or change locations, people or factions.
+// or change locations, people or factions. The 3D drawing lives in scene.js.
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-const CENTER = 500;
 
 const AREA_NAMES = {
   "outer-ring": "Outer ring",
-  "ring-structures": "Ring structures",
+  spokes: "Spokes",
+  hub: "Central hub",
   "center-spire": "Center spire",
   "the-choke": "The Choke",
 };
 
-const state = { data: null, byId: { location: {}, person: {}, faction: {} } };
+const state = { data: null, scene: null, byId: { location: {}, person: {}, faction: {} }, facesByLoc: {} };
 
 const els = {
   map: document.getElementById("map"),
@@ -36,124 +36,130 @@ function svg(tag, attrs = {}, parent) {
   return el;
 }
 
-function polar(angleDeg, radius) {
-  const a = (angleDeg * Math.PI) / 180;
-  return [CENTER + radius * Math.sin(a), CENTER - radius * Math.cos(a)];
+// Links look like #the-court (locations), #person-sem and #faction-teamsters.
+function href(kind, id) {
+  return kind === "location" ? `#${id}` : `#${kind}-${id}`;
 }
 
-function sectorPath(startDeg, endDeg, inner, outer) {
-  const [x1, y1] = polar(startDeg, outer);
-  const [x2, y2] = polar(endDeg, outer);
-  const [x3, y3] = polar(endDeg, inner);
-  const [x4, y4] = polar(startDeg, inner);
-  const large = endDeg - startDeg > 180 ? 1 : 0;
-  return `M${x1},${y1} A${outer},${outer} 0 ${large} 1 ${x2},${y2} L${x3},${y3} A${inner},${inner} 0 ${large} 0 ${x4},${y4} Z`;
+function parseHash() {
+  const hash = decodeURIComponent(location.hash.slice(1));
+  if (!hash) return {};
+  for (const kind of ["person", "faction"]) {
+    if (hash.startsWith(`${kind}-`)) return { kind, id: hash.slice(kind.length + 1) };
+  }
+  return { kind: "location", id: hash };
 }
 
-const href = (kind, id) => `#${kind}/${id}`;
 const isHazard = (loc) => loc.area === "the-choke";
+const NARROW = "(max-width: 600px)";
 
 // ---------- Map drawing ----------
 
-// Wide screens show place names beside the markers, so leave room for them
-// on either side. Narrow screens hide the names and use the full width.
-const NARROW = "(max-width: 600px)";
 function fitViewBox() {
-  const narrow = window.matchMedia(NARROW).matches;
-  els.map.setAttribute("viewBox", narrow ? "0 0 1000 1000" : "-170 0 1340 1000");
-  els.map.style.aspectRatio = narrow ? "1" : "1.34";
+  const { minX, minY, maxX, maxY } = state.scene.bounds;
+  // Wide screens show place names beside the markers, so leave room for them.
+  const side = window.matchMedia(NARROW).matches ? 30 : 190;
+  const x = minX - side;
+  const y = minY - 20;
+  const w = maxX - minX + side * 2;
+  const h = maxY - minY + 40;
+  els.map.setAttribute("viewBox", `${x} ${y} ${w} ${h}`);
+  els.map.style.aspectRatio = `${w} / ${h}`;
 }
 
-function drawBackdrop() {
-  const defs = svg("defs", {}, els.map);
-  const pattern = svg("pattern", { id: "hazard-stripes", width: 16, height: 16, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
-  svg("rect", { width: 16, height: 16, fill: "#1a0f10" }, pattern);
-  svg("rect", { width: 6, height: 16, fill: "#3a1518" }, pattern);
+function drawScene() {
+  // Building one string is much faster than creating ~2,000 elements one by one.
+  const parts = state.scene.faces.map((face) => {
+    const points = face.pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+    const loc = face.loc ? ` data-loc="${escapeHtml(face.loc)}"` : "";
+    return `<polygon class="${face.cls}" points="${points}"${loc}/>`;
+  });
+  const g = svg("g", { class: "station" }, els.map);
+  g.innerHTML = parts.join("");
 
-  const g = svg("g", { class: "backdrop", "aria-hidden": "true" }, els.map);
-
-  // Outer ring and ring structures, drawn as wide bands.
-  svg("circle", { class: "ring-band", cx: CENTER, cy: CENTER, r: 400, "stroke-width": 80 }, g);
-  svg("circle", { class: "ring-band", cx: CENTER, cy: CENTER, r: 290, "stroke-width": 140 }, g);
-  for (const r of [440, 360, 220]) svg("circle", { class: "ring-edge", cx: CENTER, cy: CENTER, r }, g);
-
-  // Slices around the outer ring.
-  for (let deg = 0; deg < 360; deg += 30) {
-    const [x1, y1] = polar(deg + 15, 360);
-    const [x2, y2] = polar(deg + 15, 440);
-    svg("line", { class: "slice", x1, y1, x2, y2 }, g);
+  for (const poly of g.querySelectorAll("[data-loc]")) {
+    (state.facesByLoc[poly.dataset.loc] ||= []).push(poly);
   }
 
-  // Spokes from the spire to the ring.
-  for (let deg = 0; deg < 360; deg += 60) {
-    const [x1, y1] = polar(deg + 30, 110);
-    const [x2, y2] = polar(deg + 30, 220);
-    svg("line", { class: "spoke", x1, y1, x2, y2 }, g);
-  }
-
-  // The Choke: a quarantined sector in the station's depths.
-  svg("path", { class: "choke-zone", d: sectorPath(145, 215, 200, 448) }, g);
-
-  // Center spire.
-  svg("circle", { class: "spire", cx: CENTER, cy: CENTER, r: 110 }, g);
-
-  const label = (text, x, y, extra = "") => {
-    const t = svg("text", { class: `area-label ${extra}`, x, y, "text-anchor": "middle" }, g);
-    t.textContent = text;
-  };
-  label("Outer ring", CENTER, 32);
-  label("Center spire", CENTER, 642);
-  label("Quarantine", CENTER, 985, "hazard");
+  // Modules are clickable too, not just the numbered markers.
+  g.addEventListener("click", (event) => {
+    const id = event.target.dataset?.loc;
+    if (id) location.hash = href("location", id);
+  });
+  g.addEventListener("mouseover", (event) => {
+    const id = event.target.dataset?.loc;
+    setHot(id);
+    if (id) showTooltip(state.byId.location[id]);
+    else hideTooltip();
+  });
+  g.addEventListener("mouseleave", () => {
+    setHot(null);
+    hideTooltip();
+  });
 }
 
-function drawConnections() {
-  const g = svg("g", { class: "connections", "aria-hidden": "true" }, els.map);
-  const seen = new Set();
-  for (const loc of state.data.locations) {
-    for (const otherId of loc.connects_to) {
-      const key = [loc.id, otherId].sort().join("|");
-      if (seen.has(key)) continue;
-      seen.add(key);
-      const other = state.byId.location[otherId];
-      svg("line", {
-        class: "connection",
-        "data-a": loc.id,
-        "data-b": otherId,
-        x1: loc.map.x,
-        y1: loc.map.y,
-        x2: other.map.x,
-        y2: other.map.y,
-      }, g);
-    }
-  }
+function setHot(id) {
+  if (state.hot === id) return;
+  for (const poly of state.facesByLoc[state.hot] || []) poly.classList.remove("is-hot");
+  state.hot = id;
+  for (const poly of state.facesByLoc[id] || []) poly.classList.add("is-hot");
 }
 
 function drawMarkers() {
-  const g = svg("g", {}, els.map);
+  svg("g", { class: "connections", id: "connections" }, els.map);
+  const g = svg("g", { class: "markers" }, els.map);
+  const labels = placeLabels();
+
   for (const loc of state.data.locations) {
-    const { x, y } = loc.map;
+    const { x, y } = state.scene.anchors[loc.id];
     const a = svg("a", {
       class: `marker${isHazard(loc) ? " is-hazard" : ""}`,
       href: href("location", loc.id),
       "data-id": loc.id,
       "aria-label": loc.name,
     }, g);
-    svg("circle", { class: "marker-dot", cx: x, cy: y, r: 22 }, a);
+    svg("circle", { class: "marker-dot", cx: x, cy: y, r: 20 }, a);
     const num = svg("text", { class: "marker-num", x, y }, a);
     num.textContent = loc.number ?? "•";
 
-    // Put labels on the outside so they don't cover the middle of the map.
-    let lx = x, ly = y + 48, anchor = "middle";
-    if (x > CENTER + 120) [lx, ly, anchor] = [x + 34, y + 7, "start"];
-    else if (x < CENTER - 120) [lx, ly, anchor] = [x - 34, y + 7, "end"];
-    const label = svg("text", { class: "marker-label", x: lx, y: ly, "text-anchor": anchor }, a);
+    const label = svg("text", { class: "marker-label", ...labels[loc.id] }, a);
     label.textContent = loc.name;
 
-    a.addEventListener("mouseenter", () => showTooltip(loc, a));
-    a.addEventListener("focus", () => showTooltip(loc, a));
-    a.addEventListener("mouseleave", hideTooltip);
-    a.addEventListener("blur", hideTooltip);
+    a.addEventListener("mouseenter", () => { setHot(loc.id); showTooltip(loc); });
+    a.addEventListener("focus", () => { setHot(loc.id); showTooltip(loc); });
+    a.addEventListener("mouseleave", () => { setHot(null); hideTooltip(); });
+    a.addEventListener("blur", () => { setHot(null); hideTooltip(); });
   }
+}
+
+// Puts each name beside its marker (right, left, below or above), choosing
+// the first spot that doesn't cover another marker or name.
+function placeLabels() {
+  const CHAR_W = 12.8; // approximate width of one character at the label size
+  const H = 26;
+  const anchors = state.scene.anchors;
+  const taken = Object.values(anchors).map(({ x, y }) => ({ x: x - 22, y: y - 22, w: 44, h: 44 }));
+  const overlaps = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const centerX = (state.scene.bounds.minX + state.scene.bounds.maxX) / 2;
+  const result = {};
+
+  for (const loc of state.data.locations) {
+    const { x, y } = anchors[loc.id];
+    const w = loc.name.length * CHAR_W;
+    const options = [
+      { box: { x: x + 28, y: y - H / 2, w, h: H }, attrs: { x: x + 30, y: y + 7, "text-anchor": "start" } },
+      { box: { x: x - 28 - w, y: y - H / 2, w, h: H }, attrs: { x: x - 30, y: y + 7, "text-anchor": "end" } },
+      { box: { x: x - w / 2, y: y + 26, w, h: H }, attrs: { x, y: y + 46, "text-anchor": "middle" } },
+      { box: { x: x - w / 2, y: y - 26 - H, w, h: H }, attrs: { x, y: y - 32, "text-anchor": "middle" } },
+    ];
+    // Prefer the side facing away from the station's center.
+    if (x < centerX - 40) [options[0], options[1]] = [options[1], options[0]];
+    const own = taken.find((t) => t.x === x - 22 && t.y === y - 22);
+    const choice = options.find((o) => !taken.some((t) => t !== own && overlaps(o.box, t))) || options[0];
+    taken.push(choice.box);
+    result[loc.id] = choice.attrs;
+  }
+  return result;
 }
 
 function drawLegend() {
@@ -166,9 +172,11 @@ function drawLegend() {
     .join("");
 }
 
-function showTooltip(loc, anchor) {
+function showTooltip(loc) {
+  if (!loc) return;
+  const marker = els.map.querySelector(`.marker[data-id="${CSS.escape(loc.id)}"] .marker-dot`);
   const wrap = els.map.parentElement.getBoundingClientRect();
-  const box = anchor.querySelector(".marker-dot").getBoundingClientRect();
+  const box = marker.getBoundingClientRect();
   els.tooltip.innerHTML = `<strong>${escapeHtml(loc.name)}</strong>${escapeHtml(loc.summary || "")}`;
   els.tooltip.hidden = false;
   const tip = els.tooltip.getBoundingClientRect();
@@ -184,20 +192,36 @@ function hideTooltip() {
   els.tooltip.hidden = true;
 }
 
+// Lights up the given locations; if one is selected, draws its routes.
 function highlight(locationIds, selectedId) {
   const related = new Set(locationIds);
   els.map.classList.toggle("has-selection", related.size > 0);
+
   els.map.querySelectorAll(".marker").forEach((m) => {
-    m.classList.toggle("is-selected", m.dataset.id === selectedId || (!selectedId && related.has(m.dataset.id)));
-    m.classList.toggle("is-linked", related.has(m.dataset.id));
+    const id = m.dataset.id;
+    m.classList.toggle("is-selected", id === selectedId || (!selectedId && related.has(id)));
+    m.classList.toggle("is-linked", related.has(id));
   });
-  els.map.querySelectorAll(".connection").forEach((line) => {
-    const active = selectedId && (line.dataset.a === selectedId || line.dataset.b === selectedId);
-    line.classList.toggle("is-active", Boolean(active));
-  });
+  for (const [id, polys] of Object.entries(state.facesByLoc)) {
+    const selected = id === selectedId || (!selectedId && related.has(id));
+    for (const poly of polys) {
+      poly.classList.toggle("is-selected", selected);
+      poly.classList.toggle("is-linked", related.has(id) && !selected);
+    }
+  }
   els.legend.querySelectorAll("a").forEach((a) => {
     a.setAttribute("aria-current", related.has(a.dataset.id) ? "true" : "false");
   });
+
+  const layer = document.getElementById("connections");
+  layer.innerHTML = "";
+  if (selectedId) {
+    const from = state.scene.anchors[selectedId];
+    for (const otherId of state.byId.location[selectedId].connects_to) {
+      const to = state.scene.anchors[otherId];
+      svg("line", { class: "connection", x1: from.x, y1: from.y, x2: to.x, y2: to.y }, layer);
+    }
+  }
 }
 
 // ---------- Panel views ----------
@@ -298,8 +322,8 @@ function notFound() {
 // ---------- Routing ----------
 
 function route() {
-  const [kind, id] = decodeURIComponent(location.hash.slice(1)).split("/");
-  const entry = kind && id ? state.byId[kind]?.[id] : null;
+  const { kind, id } = parseHash();
+  const entry = kind ? state.byId[kind]?.[id] : null;
   let html;
   if (!kind) html = renderStation();
   else if (!entry) html = notFound();
@@ -333,10 +357,10 @@ async function init() {
   for (const f of state.data.factions) state.byId.faction[f.id] = f;
 
   els.tagline.textContent = state.data.station.tagline || "";
+  state.scene = window.StationScene.build(state.data.locations);
   fitViewBox();
   window.matchMedia(NARROW).addEventListener("change", fitViewBox);
-  drawBackdrop();
-  drawConnections();
+  drawScene();
   drawMarkers();
   drawLegend();
   window.addEventListener("hashchange", route);

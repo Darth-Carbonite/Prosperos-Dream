@@ -17,8 +17,9 @@ name: The Stellar Burn
 number: 2
 area: outer-ring
 summary: The bar everyone ends up at. Drinks, rumors and R&R.
-map: { x: 707, y: 205 }
-connects_to: [the-chop-shop, canyonheavy-market]
+placement: { angle: 228 }
+module: block
+connects_to: [the-farm]
 factions: [teamsters]
 ---
 A loud, crowded club stacked over several floors...
@@ -28,14 +29,32 @@ A loud, crowded club stacked over several floors...
 |---|---|---|
 | `name` | yes | The name shown on the map and in the panel. |
 | `number` | no | The number on the map marker. Locations are listed in this order. |
-| `area` | yes | One of `outer-ring`, `ring-structures`, `center-spire`, `the-choke`. Places in `the-choke` are drawn in red. |
+| `area` | yes | One of `outer-ring`, `spokes`, `hub`, `center-spire`, `the-choke`. Shown above the title; places in `the-choke` get amber hazard markers. |
 | `summary` | no | One line, shown in the hover tooltip and under the title. |
-| `map` | yes | Marker position. The map is 1000 × 1000: `x` goes left to right, `y` goes top to bottom, and the center of the station is `{ x: 500, y: 500 }`. |
+| `placement` | yes | Where the location sits on the 3D map. See below. |
+| `module` | no | The shape of the building drawn there: `block` (the default), `tower`, `cluster`, or `none`. |
 | `connects_to` | no | Ids of locations you can travel to directly. You only need to list a connection in **one** of the two files; it's shown on both. |
 | `factions` | no | Ids of factions present here. |
 | `inside` | no | Id of a larger location this one sits within (Doptown uses `inside: the-choke`). |
 
-**The current map positions and connections are placeholders.** Adjust them to match your campaign's map.
+### Placing a location on the map
+
+`placement` takes up to three numbers:
+
+- **`angle`**: where around the station, in degrees, as you look at the map. `0` is the front (nearest you), `90` the right, `180` the back, `270` the left.
+- **`distance`** (optional, default `1`): how far out from the center. `1` puts it on the outer ring, `0.5` halfway along a spoke, and `0` at the center.
+- **`level`** (optional, default `0`): only used at the center. `0` puts it on top of the central hub; a negative number puts it down the spire, from `-0.1` near the top to `-1` at the very bottom.
+
+| Example | Where it ends up |
+|---|---|
+| `placement: { angle: 148 }` | On the ring, back-right (Tempest Co. HQ) |
+| `placement: { angle: 64, distance: 0.55 }` | Partway along the right-front spoke (CANYONHEAVY.market) |
+| `placement: { angle: 0, distance: 0 }` | On top of the central hub (The Court) |
+| `placement: { angle: 0, distance: 0, level: -0.75 }` | Low on the spire (The Choke) |
+
+Every location on the ring or a spoke gets a spoke drawn to it automatically. Each module's exact shape is generated from the file name, so it stays the same every time; renaming the file gives it a new shape.
+
+The positions follow the station illustration in *A Pound of Flesh*. The connections between locations are placeholders; adjust them to suit your campaign.
 
 ## People: `content/people/`
 
@@ -63,6 +82,10 @@ Elite, well-armed and expensive...
 ```
 
 `base` is the faction's headquarters (optional). The map works out which locations a faction is present at, and who its members are, from the location and people files.
+
+## Links to a specific entry
+
+Every location, person and faction has its own link you can send to players: add `#the-court` (a location's id), `#person-sem` or `#faction-tempest-co` to the end of the site's address.
 
 ## Station overview: `content/station.md`
 
