@@ -5,7 +5,8 @@ area: hub
 summary: Justice by arena combat. The best seats on the station for watching power brokers.
 placement: { angle: 0, distance: 0 }
 module: block
-connects_to: [doptown]
+connects_to:
+  doptown: 30
 factions: [the-novos]
 ---
 Disputes on the Dream aren't settled by lawyers. They're settled in the arena. The accused fight, hire someone to fight for them, or take their chances with a public defender, while the crowd bets on the outcome.

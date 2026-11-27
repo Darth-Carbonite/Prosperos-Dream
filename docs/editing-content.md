@@ -19,7 +19,9 @@ area: outer-ring
 summary: The bar everyone ends up at. Drinks, rumors and R&R.
 placement: { angle: 228 }
 module: block
-connects_to: [the-farm]
+connects_to:
+  the-farm: 20
+  the-court: 40
 factions: [teamsters]
 ---
 A loud, crowded club stacked over several floors...
@@ -33,9 +35,23 @@ A loud, crowded club stacked over several floors...
 | `summary` | no | One line, shown in the hover tooltip and under the title. |
 | `placement` | yes | Where the location sits on the 3D map. See below. |
 | `module` | no | The shape of the building drawn there: `block` (the default), `tower`, `cluster`, or `none`. |
-| `connects_to` | no | Ids of locations you can travel to directly. You only need to list a connection in **one** of the two files; it's shown on both. |
+| `connects_to` | no | Locations you can travel to directly, each with the walking time in minutes. See below. |
 | `factions` | no | Ids of factions present here. |
 | `inside` | no | Id of a larger location this one sits within (Doptown uses `inside: the-choke`). |
+
+### Connections and travel times
+
+List each neighboring location's id, a colon, and the travel time in minutes. Write `unknown` if nobody knows how long it takes:
+
+```yaml
+connects_to:
+  the-court: 30
+  the-choke: unknown
+```
+
+You only need to list a connection in **one** of the two files; it shows on both, with the same time. If you do list it in both, the times must match. Times appear on the dotted route lines when a location is selected, and next to each place under "Connects to", nearest first.
+
+If you don't want to show times, a plain list still works: `connects_to: [the-court, the-farm]`.
 
 ### Placing a location on the map
 

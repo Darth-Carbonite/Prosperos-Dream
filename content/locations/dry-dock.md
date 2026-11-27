@@ -5,7 +5,10 @@ area: outer-ring
 summary: Where ships come in, get searched, and get fixed, for a price.
 placement: { angle: 322 }
 module: cluster
-connects_to: [the-ice-box, the-chop-shop, the-court]
+connects_to:
+  the-ice-box: 20
+  the-chop-shop: 60
+  the-court: 40
 factions: [teamsters, tempest-co]
 ---
 The station's front door. Smaller ships are craned into the stacks; anything bigger moors at the piers and sends its crew in by shuttle. Every arrival goes through a Clean Room, where a hazmat squad strips, searches and hoses you down before you're allowed any further.

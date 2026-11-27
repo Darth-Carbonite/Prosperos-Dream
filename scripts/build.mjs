@@ -72,6 +72,29 @@ const ids = {
   faction: new Set(factions.map((f) => f.id)),
 };
 
+// `connects_to` can be a plain list of ids, or ids with travel times:
+//   connects_to:
+//     the-court: 40        (minutes)
+//     the-choke: unknown
+// This turns either form into [{ to, minutes }], where minutes is a
+// number, "unknown", or null when no time was given.
+function readConnections(loc) {
+  const value = loc.connects_to;
+  if (value === undefined || value === null) return [];
+  if (Array.isArray(value)) return value.map((to) => ({ to, minutes: null }));
+  if (typeof value === "object") {
+    return Object.entries(value).map(([to, minutes]) => {
+      if (minutes === null || minutes === "unknown" || (typeof minutes === "number" && minutes > 0)) {
+        return { to, minutes };
+      }
+      fail(loc.file, `travel time to "${to}" must be a number of minutes or \`unknown\` (got "${minutes}")`);
+      return { to, minutes: null };
+    });
+  }
+  fail(loc.file, "`connects_to` must be a list of ids, or ids with travel times in minutes");
+  return [];
+}
+
 function checkRefs(entry, field, kind) {
   for (const ref of asList(entry[field])) {
     if (!ids[kind].has(ref)) {
@@ -106,7 +129,12 @@ for (const loc of locations) {
     }
     numbers.set(loc.number, loc.id);
   }
-  checkRefs(loc, "connects_to", "location");
+  loc.links = readConnections(loc);
+  for (const { to } of loc.links) {
+    if (!ids.location.has(to)) {
+      fail(loc.file, `\`connects_to\` lists "${to}", but there is no location file named ${to}.md`);
+    }
+  }
   checkRefs(loc, "factions", "faction");
   if (loc.inside) checkRefs(loc, "inside", "location");
 }
@@ -130,22 +158,36 @@ if (errors.length) {
 }
 
 // Connections only need to be written in one of the two files; build them
-// both ways here so the map and side panel always agree.
-const connections = new Map(locations.map((l) => [l.id, new Set()]));
+// both ways here so the map and side panel always agree. If both files give
+// a travel time, they must match.
+const connections = new Map(locations.map((l) => [l.id, new Map()]));
 for (const loc of locations) {
-  for (const other of asList(loc.connects_to)) {
-    connections.get(loc.id).add(other);
-    connections.get(other).add(loc.id);
+  for (const { to, minutes } of loc.links) {
+    for (const [a, b] of [[loc.id, to], [to, loc.id]]) {
+      const known = connections.get(a).get(b);
+      if (known != null && minutes != null && known !== minutes) {
+        fail(loc.file, `travel time to "${to}" is ${minutes}, but ${to}.md says ${known}`);
+      }
+      connections.get(a).set(b, minutes ?? known ?? null);
+    }
   }
 }
 
-const strip = ({ file, ...rest }) => rest;
+if (errors.length) {
+  console.error(`\nThe site was NOT built. Please fix these ${errors.length} problem(s):\n`);
+  console.error(errors.join("\n"));
+  console.error("");
+  process.exit(1);
+}
+
+const strip = ({ file, links, ...rest }) => rest;
 
 const data = {
   station,
   locations: locations.map((loc) => ({
     ...strip(loc),
-    connects_to: [...connections.get(loc.id)].sort(),
+    connects_to: [...connections.get(loc.id).keys()].sort(),
+    travel_minutes: Object.fromEntries(connections.get(loc.id)),
     factions: asList(loc.factions),
   })),
   people: people.map((p) => ({

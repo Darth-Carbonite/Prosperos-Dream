@@ -225,17 +225,49 @@ function highlight(locationIds, selectedId) {
   const layer = document.getElementById("connections");
   layer.innerHTML = "";
   if (selectedId) {
+    const loc = state.byId.location[selectedId];
     const from = state.scene.anchors[selectedId];
-    for (const otherId of state.byId.location[selectedId].connects_to) {
+    const labels = [];
+    for (const otherId of loc.connects_to) {
       const to = state.scene.anchors[otherId];
       svg("line", { class: "connection", x1: from.x, y1: from.y, x2: to.x, y2: to.y }, layer);
+      const time = travelText(loc.travel_minutes?.[otherId]);
+      if (time) labels.push({ x: (from.x + to.x) / 2, y: (from.y + to.y) / 2, time });
+    }
+    // Travel times go on top of all the lines so no line crosses a label.
+    for (const { x, y, time } of labels) {
+      const text = svg("text", { class: "travel-time", x, y }, layer);
+      text.textContent = time;
     }
   }
 }
 
+// "20 min", "Unknown", or "" when no time was given.
+function travelText(minutes) {
+  if (minutes === "unknown") return "Unknown";
+  if (typeof minutes === "number") return `${minutes} min`;
+  return "";
+}
+
 // ---------- Panel views ----------
 
-const chip = (kind, entry) => `<li><a class="chip" href="${href(kind, entry.id)}">${escapeHtml(entry.name)}</a></li>`;
+const chip = (kind, entry, note = "") =>
+  `<li><a class="chip" href="${href(kind, entry.id)}">${escapeHtml(entry.name)}${
+    note ? `<span class="chip-note">${escapeHtml(note)}</span>` : ""
+  }</a></li>`;
+
+// Neighboring locations, nearest first, each with its travel time.
+function routeList(loc) {
+  if (!loc.connects_to.length) return `<p class="empty">No known routes.</p>`;
+  const order = (id) => {
+    const m = loc.travel_minutes?.[id];
+    return typeof m === "number" ? m : m === "unknown" ? Infinity : Infinity - 1;
+  };
+  const ids = [...loc.connects_to].sort((a, b) => order(a) - order(b));
+  return `<ul class="chips">${ids
+    .map((id) => chip("location", state.byId.location[id], travelText(loc.travel_minutes?.[id])))
+    .join("")}</ul>`;
+}
 
 function chipList(kind, entries, emptyText) {
   return entries.length ? `<ul class="chips">${entries.map((e) => chip(kind, e)).join("")}</ul>` : `<p class="empty">${emptyText}</p>`;
@@ -265,7 +297,6 @@ function renderStation() {
 
 function renderLocation(loc) {
   const people = state.data.people.filter((p) => p.location === loc.id);
-  const connections = loc.connects_to.map((id) => state.byId.location[id]);
   const factions = loc.factions.map((id) => state.byId.faction[id]);
   const inside = loc.inside ? state.byId.location[loc.inside] : null;
   const contains = state.data.locations.filter((l) => l.inside === loc.id);
@@ -282,7 +313,7 @@ function renderLocation(loc) {
     <div class="body">${loc.html}</div>
     ${contains.length ? `<h2>Places within</h2>${chipList("location", contains, "")}` : ""}
     <h2>Connects to</h2>
-    ${chipList("location", connections, "No known routes.")}
+    ${routeList(loc)}
     <h2>Who you'll find here</h2>
     ${peopleList(people, "No one of note.")}
     <h2>Factions present</h2>

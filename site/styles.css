@@ -228,6 +228,20 @@ a {
   stroke: var(--purple);
 }
 
+.travel-time {
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 700;
+  fill: var(--purple);
+  text-anchor: middle;
+  dominant-baseline: central;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 7px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
 .connection {
   stroke: var(--purple);
   stroke-width: 3;
@@ -303,6 +317,10 @@ a {
 @media (max-width: 600px) {
   .marker-label {
     display: none;
+  }
+  .travel-time {
+    font-size: 30px;
+    stroke-width: 9px;
   }
   .marker-dot {
     r: 30px;
@@ -475,6 +493,15 @@ a {
   color: var(--text);
   font-size: 14px;
   text-decoration: none;
+}
+
+.chip-note {
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid var(--line);
+  color: var(--purple);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 
 .chip:hover,

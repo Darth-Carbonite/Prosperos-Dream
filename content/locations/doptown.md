@@ -5,7 +5,8 @@ area: the-choke
 inside: the-choke
 summary: A guarded debtors' town for people who couldn't pay the oxygen tax.
 placement: { angle: 18, distance: 0, level: -0.3 }
-connects_to: [the-choke]
+connects_to:
+  the-choke: unknown
 factions: [tempest-co]
 ---
 When your credstick runs dry, you don't stop breathing. You go to Doptown. Packed, thin-aired and heavily guarded, it holds the people the station has decided owe it more than they can pay.
