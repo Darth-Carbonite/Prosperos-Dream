@@ -18,7 +18,6 @@ const state = { data: null, scene: null, byId: { location: {}, person: {}, facti
 const els = {
   map: document.getElementById("map"),
   panel: document.getElementById("panel"),
-  tooltip: document.getElementById("tooltip"),
   legend: document.getElementById("legend-list"),
   tagline: document.getElementById("tagline"),
 };
@@ -87,15 +86,9 @@ function drawScene() {
     if (id) location.hash = href("location", id);
   });
   g.addEventListener("mouseover", (event) => {
-    const id = event.target.dataset?.loc;
-    setHot(id);
-    if (id) showTooltip(state.byId.location[id]);
-    else hideTooltip();
+    setHot(event.target.dataset?.loc);
   });
-  g.addEventListener("mouseleave", () => {
-    setHot(null);
-    hideTooltip();
-  });
+  g.addEventListener("mouseleave", () => setHot(null));
 }
 
 function setHot(id) {
@@ -125,10 +118,10 @@ function drawMarkers() {
     const label = svg("text", { class: "marker-label", ...labels[loc.id] }, a);
     label.textContent = loc.name;
 
-    a.addEventListener("mouseenter", () => { setHot(loc.id); showTooltip(loc); });
-    a.addEventListener("focus", () => { setHot(loc.id); showTooltip(loc); });
-    a.addEventListener("mouseleave", () => { setHot(null); hideTooltip(); });
-    a.addEventListener("blur", () => { setHot(null); hideTooltip(); });
+    a.addEventListener("mouseenter", () => setHot(loc.id));
+    a.addEventListener("focus", () => setHot(loc.id));
+    a.addEventListener("mouseleave", () => setHot(null));
+    a.addEventListener("blur", () => setHot(null));
   }
 }
 
@@ -175,26 +168,6 @@ function drawLegend() {
     .join("");
 }
 
-function showTooltip(loc) {
-  if (!loc) return;
-  const marker = els.map.querySelector(`.marker[data-id="${CSS.escape(loc.id)}"] .marker-dot`);
-  const wrap = els.map.parentElement.getBoundingClientRect();
-  const box = marker.getBoundingClientRect();
-  els.tooltip.innerHTML = `<strong>${escapeHtml(loc.name)}</strong>${escapeHtml(loc.summary || "")}`;
-  els.tooltip.hidden = false;
-  const tip = els.tooltip.getBoundingClientRect();
-  let left = box.left - wrap.left + box.width / 2 - tip.width / 2;
-  left = Math.max(0, Math.min(left, wrap.width - tip.width));
-  let top = box.top - wrap.top - tip.height - 10;
-  if (top < 0) top = box.bottom - wrap.top + 10;
-  els.tooltip.style.left = `${left}px`;
-  els.tooltip.style.top = `${top}px`;
-}
-
-function hideTooltip() {
-  els.tooltip.hidden = true;
-}
-
 // Lights up the given locations; if one is selected, draws its routes.
 function highlight(locationIds, selectedId) {
   const related = new Set(locationIds);
@@ -227,17 +200,9 @@ function highlight(locationIds, selectedId) {
   if (selectedId) {
     const loc = state.byId.location[selectedId];
     const from = state.scene.anchors[selectedId];
-    const labels = [];
     for (const otherId of loc.connects_to) {
       const to = state.scene.anchors[otherId];
       svg("line", { class: "connection", x1: from.x, y1: from.y, x2: to.x, y2: to.y }, layer);
-      const time = travelText(loc.travel_minutes?.[otherId]);
-      if (time) labels.push({ x: (from.x + to.x) / 2, y: (from.y + to.y) / 2, time });
-    }
-    // Travel times go on top of all the lines so no line crosses a label.
-    for (const { x, y, time } of labels) {
-      const text = svg("text", { class: "travel-time", x, y }, layer);
-      text.textContent = time;
     }
   }
 }
@@ -374,7 +339,6 @@ function route() {
   els.panel.innerHTML = html;
   els.panel.scrollTop = 0;
   document.title = entry ? `${entry.name} · Prospero's Dream` : "Prospero's Dream Station Map";
-  hideTooltip();
 
   // On phones the panel sits under the map, so bring it into view.
   if (kind && window.matchMedia("(max-width: 860px)").matches) {

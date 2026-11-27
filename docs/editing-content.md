@@ -49,7 +49,7 @@ connects_to:
   the-choke: unknown
 ```
 
-You only need to list a connection in **one** of the two files; it shows on both, with the same time. If you do list it in both, the times must match. Times appear on the dotted route lines when a location is selected, and next to each place under "Connects to", nearest first.
+You only need to list a connection in **one** of the two files; it shows on both, with the same time. If you do list it in both, the times must match. Times appear in the side panel next to each place under "Connects to", nearest first.
 
 If you don't want to show times, a plain list still works: `connects_to: [the-court, the-farm]`.
 
