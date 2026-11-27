@@ -135,8 +135,11 @@ function drawMarkers() {
 // Puts each name beside its marker (right, left, below or above), choosing
 // the first spot that doesn't cover another marker or name.
 function placeLabels() {
-  const CHAR_W = 12.8; // approximate width of one character at the label size
-  const H = 26;
+  const H = 28;
+  // Measure each name in the label font (24px bold D-DIN, 0.02em spacing).
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = '700 24px "D-DIN", "Arial Narrow", sans-serif';
+  const widthOf = (text) => ctx.measureText(text).width + text.length * 0.48 + 4;
   const anchors = state.scene.anchors;
   const taken = Object.values(anchors).map(({ x, y }) => ({ x: x - 22, y: y - 22, w: 44, h: 44 }));
   const overlaps = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
@@ -145,7 +148,7 @@ function placeLabels() {
 
   for (const loc of state.data.locations) {
     const { x, y } = anchors[loc.id];
-    const w = loc.name.length * CHAR_W;
+    const w = widthOf(loc.name);
     const options = [
       { box: { x: x + 28, y: y - H / 2, w, h: H }, attrs: { x: x + 30, y: y + 7, "text-anchor": "start" } },
       { box: { x: x - 28 - w, y: y - H / 2, w, h: H }, attrs: { x: x - 30, y: y + 7, "text-anchor": "end" } },
@@ -357,6 +360,15 @@ async function init() {
   for (const f of state.data.factions) state.byId.faction[f.id] = f;
 
   els.tagline.textContent = state.data.station.tagline || "";
+  // Wait for the fonts so labels are measured and placed with the real widths.
+  try {
+    await Promise.race([
+      Promise.all([document.fonts.load('700 24px "D-DIN"'), document.fonts.load('400 16px "D-DIN"')]),
+      new Promise((resolve) => setTimeout(resolve, 2500)),
+    ]);
+  } catch {
+    // If the font can't load, the fallback font is used and the map still works.
+  }
   state.scene = window.StationScene.build(state.data.locations);
   fitViewBox();
   window.matchMedia(NARROW).addEventListener("change", fitViewBox);

@@ -29,6 +29,10 @@ This repository is public, so everything in it is visible to players.
 - **Player-facing only.** No Warden secrets, twists or hidden identities.
 - **Your own words.** Don't copy text, maps or stat blocks from the published books.
 
+## Credits
+
+- Typeface: [D-DIN](https://www.datto.com/fonts/d-din) by Datto, used under the SIL Open Font License. The license is in `site/fonts/OFL.txt`.
+
 ---
 
 Unofficial fan project. Mothership® and *A Pound of Flesh* are © Tuesday Knight Games. Not affiliated with Tuesday Knight Games.

@@ -1,3 +1,26 @@
+/* D-DIN by Datto, under the SIL Open Font License (see fonts/OFL.txt). */
+@font-face {
+  font-family: "D-DIN";
+  src: url("fonts/d-din-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "D-DIN";
+  src: url("fonts/d-din-400italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "D-DIN";
+  src: url("fonts/d-din-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
   --bg: #08040b;
@@ -21,8 +44,8 @@
   --glow: rgba(255, 45, 149, 0.45);
   --marker: #ffffff;
   --marker-ink: #0a0508;
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
-  --sans: "IBM Plex Sans", system-ui, sans-serif;
+  --display: "D-DIN", "DIN Alternate", "Arial Narrow", system-ui, sans-serif;
+  --body: "D-DIN", "DIN Alternate", "Arial Narrow", system-ui, sans-serif;
 }
 
 * {
@@ -34,7 +57,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--sans);
+  font-family: var(--body);
   font-size: 16px;
   line-height: 1.55;
 }
@@ -62,7 +85,7 @@ a {
 }
 
 .brand-kicker {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -70,9 +93,9 @@ a {
 }
 
 .brand-name {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
@@ -217,9 +240,9 @@ a {
 }
 
 .marker-num {
-  font-family: var(--mono);
-  font-weight: 600;
-  font-size: 19px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 22px;
   fill: var(--marker-ink);
   text-anchor: middle;
   dominant-baseline: central;
@@ -227,9 +250,10 @@ a {
 }
 
 .marker-label {
-  font-family: var(--mono);
-  font-size: 21px;
-  font-weight: 600;
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   fill: var(--text);
   paint-order: stroke;
   stroke: var(--bg);
@@ -301,7 +325,7 @@ a {
 
 .tooltip strong {
   display: block;
-  font-family: var(--mono);
+  font-family: var(--display);
 }
 
 /* ---------- Legend ---------- */
@@ -311,7 +335,7 @@ a {
 }
 
 .legend-title {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -342,7 +366,7 @@ a {
 }
 
 .legend-num {
-  font-family: var(--mono);
+  font-family: var(--display);
   color: var(--muted);
   min-width: 2ch;
 }
@@ -350,7 +374,7 @@ a {
 /* ---------- Panel ---------- */
 
 .panel-kicker {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -363,7 +387,7 @@ a {
 }
 
 .panel h1 {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: 26px;
   line-height: 1.2;
   margin: 0 0 8px;
@@ -376,7 +400,7 @@ a {
 }
 
 .panel h2 {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -410,9 +434,9 @@ a {
 
 .stat dd {
   margin: 0;
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .chips {
@@ -479,7 +503,7 @@ a {
 .back {
   display: inline-block;
   margin-bottom: 16px;
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: 13px;
   text-decoration: none;
 }
