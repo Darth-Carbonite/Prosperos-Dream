@@ -11,7 +11,7 @@
   const ctx = canvas.getContext("2d");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  const TURN_SECONDS = 420; // one full turn every 7 minutes
+  const TURN_SECONDS = 840; // one full turn every 14 minutes
   const SPEED = (2 * Math.PI) / TURN_SECONDS; // radians per second
   const STAR_DENSITY = 1 / 520; // stars per square pixel
 
