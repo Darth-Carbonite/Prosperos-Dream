@@ -21,7 +21,10 @@
 
     <main class="layout">
       <section class="map-wrap" aria-label="Station map">
-        <svg id="map" viewBox="0 0 1000 1000" role="group" aria-label="Map of Prospero's Dream"></svg>
+        <div class="map-stage">
+          <canvas id="starfield" aria-hidden="true"></canvas>
+          <svg id="map" viewBox="0 0 1000 1000" role="group" aria-label="Map of Prospero's Dream"></svg>
+        </div>
         <nav class="legend" aria-label="All locations">
           <h2 class="legend-title">Locations</h2>
           <ol id="legend-list"></ol>
@@ -36,6 +39,7 @@
       site is not affiliated with Tuesday Knight Games.
     </footer>
 
+    <script src="starfield.js"></script>
     <script src="scene.js"></script>
     <script src="app.js"></script>
   </body>

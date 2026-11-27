@@ -49,6 +49,8 @@
   --hull-hot: #2a0a20;
   --hull-selected: #3d0b2b;
   --glow: rgba(255, 45, 149, 0.45);
+  --nebula-pink: rgba(255, 45, 149, 0.09);
+  --nebula-purple: rgba(176, 124, 255, 0.08);
   --marker: #ffffff;
   --marker-ink: #0a0508;
   --heading: "D-DIN Condensed", "D-DIN", "Arial Narrow", system-ui, sans-serif;
@@ -137,7 +139,27 @@ a {
   min-width: 0;
 }
 
+/* The starfield sits behind the map and fades out toward the edges. */
+.map-stage {
+  position: relative;
+  isolation: isolate;
+}
+
+#starfield {
+  position: absolute;
+  inset: -24px -24px -8px;
+  width: calc(100% + 48px);
+  height: calc(100% + 32px);
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 45% at 28% 30%, var(--nebula-pink), transparent 70%),
+    radial-gradient(ellipse 55% 50% at 78% 72%, var(--nebula-purple), transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 72% at 50% 46%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 72% at 50% 46%, #000 62%, transparent 100%);
+}
+
 #map {
+  position: relative;
   display: block;
   width: 100%;
   max-height: calc(100vh - 140px);
