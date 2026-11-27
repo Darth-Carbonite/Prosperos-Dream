@@ -52,7 +52,7 @@ A loud, crowded club stacked over several floors...
 | `placement: { angle: 0, distance: 0 }` | On top of the central hub (The Court) |
 | `placement: { angle: 0, distance: 0, level: -0.75 }` | Low on the spire (The Choke) |
 
-Every location on the ring or a spoke gets a spoke drawn to it automatically. Each module's exact shape is generated from the file name, so it stays the same every time; renaming the file gives it a new shape.
+Every location on the ring or a spoke gets a spoke drawn to it automatically. Locations on the spire don't get a building; instead each one owns a section of the spire around its level, split halfway between neighboring spire locations, and that section lights up when it's selected. Each module's exact shape is generated from the file name, so it stays the same every time; renaming the file gives it a new shape.
 
 The positions follow the station illustration in *A Pound of Flesh*. The connections between locations are placeholders; adjust them to suit your campaign.
 

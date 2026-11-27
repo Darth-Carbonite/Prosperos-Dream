@@ -21,6 +21,7 @@ window.StationScene = (function () {
   const HUB_R = 120;
   const HUB_TOP = 58;
   const SPIRE_LEN = 720;
+  const SPIRE_COLLAR = -176; // height of the hazard collar; The Choke starts below it
 
   // ---------- Small vector helpers ----------
 
@@ -163,7 +164,7 @@ window.StationScene = (function () {
       box(faces, [0, 0, 0], f, [0, -70, 118], [34, 90, 30], { cls: "face spire" });
     }
     // A hazard collar: below this line is The Choke.
-    cylinder(faces, { r: 134, y0: -190, y1: -176, sides: 40, slice: 100 }, { cls: "face hazard" });
+    cylinder(faces, { r: 134, y0: SPIRE_COLLAR - 14, y1: SPIRE_COLLAR, sides: 40, slice: 100 }, { cls: "face hazard" });
   }
 
   // ---------- Location modules ----------
@@ -237,6 +238,37 @@ window.StationScene = (function () {
     return { kind: "ring", angle: p.angle };
   }
 
+  // Locations on the spire don't get a building of their own. Instead each
+  // one owns a section of the spire around its level, so it lights up and
+  // can be clicked like any other module. Sections run from the hazard
+  // collar down to the bottom, split halfway between neighboring locations.
+  function claimSpireSections(faces, locations) {
+    const onSpire = locations
+      .map((loc) => ({ loc, where: placementOf(loc) }))
+      .filter(({ where }) => where.kind === "spire")
+      .sort((a, b) => b.where.level - a.where.level);
+    if (!onSpire.length) return;
+
+    const sections = onSpire.map(({ loc, where }, i) => {
+      const above = onSpire[i - 1];
+      const below = onSpire[i + 1];
+      return {
+        loc,
+        top: above ? ((above.where.level + where.level) / 2) * SPIRE_LEN : SPIRE_COLLAR,
+        bottom: below ? ((below.where.level + where.level) / 2) * SPIRE_LEN : -Infinity,
+      };
+    });
+
+    for (const face of faces) {
+      if (!face.cls.includes("spire")) continue;
+      const y = centroid(face.pts)[1];
+      const section = sections.find((s) => y <= s.top && y > s.bottom);
+      if (!section) continue;
+      face.loc = section.loc.id;
+      face.cls += ` module${section.loc.area === "the-choke" ? " is-hazard" : ""}`;
+    }
+  }
+
   function build(locations) {
     const faces = [];
     const anchors = {};
@@ -272,6 +304,8 @@ window.StationScene = (function () {
       const top = type === "none" ? 20 : moduleShape(faces, origin, f, type, scale, meta, rand);
       anchors[loc.id] = project(add(origin, [0, top + 34, 0]));
     }
+
+    claimSpireSections(faces, locations);
 
     const drawn = faces
       .map((face) => {
