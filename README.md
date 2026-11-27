@@ -31,7 +31,7 @@ This repository is public, so everything in it is visible to players.
 
 ## Credits
 
-- Typeface: [D-DIN](https://www.datto.com/fonts/d-din) by Datto, used under the SIL Open Font License. The license is in `site/fonts/OFL.txt`.
+- Typefaces: [D-DIN and D-DIN Condensed](https://github.com/amcchord/datto-d-din) by Datto, used under the SIL Open Font License. The license is in `site/fonts/OFL.txt`.
 
 ---
 

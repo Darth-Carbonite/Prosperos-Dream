@@ -20,6 +20,13 @@
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: "D-DIN Condensed";
+  src: url("fonts/d-din-condensed-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   color-scheme: dark;
@@ -44,6 +51,7 @@
   --glow: rgba(255, 45, 149, 0.45);
   --marker: #ffffff;
   --marker-ink: #0a0508;
+  --heading: "D-DIN Condensed", "D-DIN", "Arial Narrow", system-ui, sans-serif;
   --display: "D-DIN", "DIN Alternate", "Arial Narrow", system-ui, sans-serif;
   --body: "D-DIN", "DIN Alternate", "Arial Narrow", system-ui, sans-serif;
 }
@@ -93,8 +101,9 @@ a {
 }
 
 .brand-name {
-  font-family: var(--display);
-  font-size: 28px;
+  font-family: var(--heading);
+  font-size: 38px;
+  line-height: 1.05;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -335,8 +344,9 @@ a {
 }
 
 .legend-title {
-  font-family: var(--display);
-  font-size: 12px;
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 15px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
@@ -387,9 +397,12 @@ a {
 }
 
 .panel h1 {
-  font-family: var(--display);
-  font-size: 26px;
-  line-height: 1.2;
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
   margin: 0 0 8px;
 }
 
@@ -400,8 +413,9 @@ a {
 }
 
 .panel h2 {
-  font-family: var(--display);
-  font-size: 12px;
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 15px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
