@@ -32,7 +32,7 @@ A loud, crowded club stacked over several floors...
 | `name` | yes | The name shown on the map and in the panel. |
 | `number` | no | The number on the map marker. Locations are listed in this order. |
 | `area` | yes | One of `outer-ring`, `spokes`, `hub`, `center-spire`, `the-choke`. Shown above the title; places in `the-choke` get amber hazard markers. |
-| `summary` | no | One line, shown in the hover tooltip and under the title. |
+| `summary` | no | One line, shown under the title in the side panel. |
 | `placement` | yes | Where the location sits on the 3D map. See below. |
 | `module` | no | The shape of the building drawn there: `block` (the default), `tower`, `cluster`, or `none`. |
 | `connects_to` | no | Locations you can travel to directly, each with the walking time in minutes. See below. |
