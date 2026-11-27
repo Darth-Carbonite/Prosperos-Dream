@@ -371,8 +371,12 @@ a {
 }
 
 .legend a:hover .legend-name,
-.legend a[aria-current="true"] .legend-name {
+.legend a.is-linked .legend-name {
   color: var(--accent);
+}
+
+.legend a.is-selected .legend-name {
+  color: var(--purple);
 }
 
 .legend-num {

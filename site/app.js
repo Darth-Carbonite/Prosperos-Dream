@@ -213,7 +213,13 @@ function highlight(locationIds, selectedId) {
     }
   }
   els.legend.querySelectorAll("a").forEach((a) => {
-    a.setAttribute("aria-current", related.has(a.dataset.id) ? "true" : "false");
+    // In this list the selected location is blue and its connections pink.
+    const id = a.dataset.id;
+    const selected = id === selectedId || (!selectedId && related.has(id));
+    a.classList.toggle("is-selected", selected);
+    a.classList.toggle("is-linked", related.has(id) && !selected);
+    if (selected) a.setAttribute("aria-current", "location");
+    else a.removeAttribute("aria-current");
   });
 
   const layer = document.getElementById("connections");
