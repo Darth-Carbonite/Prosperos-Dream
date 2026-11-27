@@ -370,13 +370,13 @@ a {
   text-decoration: none;
 }
 
-.legend a:hover .legend-name,
 .legend a.is-linked .legend-name {
-  color: var(--accent);
+  color: var(--purple);
 }
 
+.legend a:hover .legend-name,
 .legend a.is-selected .legend-name {
-  color: var(--purple);
+  color: var(--accent);
 }
 
 .legend-num {

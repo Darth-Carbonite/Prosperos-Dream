@@ -213,7 +213,7 @@ function highlight(locationIds, selectedId) {
     }
   }
   els.legend.querySelectorAll("a").forEach((a) => {
-    // In this list the selected location is blue and its connections pink.
+    // Like the map: the selected location is pink and its connections blue.
     const id = a.dataset.id;
     const selected = id === selectedId || (!selectedId && related.has(id));
     a.classList.toggle("is-selected", selected);
