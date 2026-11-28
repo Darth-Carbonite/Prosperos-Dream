@@ -62,6 +62,7 @@ function fitViewBox() {
   const y = minY - 20;
   const w = maxX - minX + side * 2;
   const h = maxY - minY + 40;
+  state.view = { x, y, w, h };
   els.map.setAttribute("viewBox", `${x} ${y} ${w} ${h}`);
   els.map.style.aspectRatio = `${w} / ${h}`;
 }
@@ -374,7 +375,15 @@ async function init() {
   fitViewBox();
   window.matchMedia(NARROW).addEventListener("change", fitViewBox);
   drawScene();
+  const shipLayer = svg("g", { class: "ships", "aria-hidden": "true" }, els.map);
   drawMarkers();
+  window.StationShips?.start({
+    layer: shipLayer,
+    ships: state.data.ships,
+    dock: state.scene.docks["dry-dock"],
+    getView: () => state.view,
+    isNarrow: () => window.matchMedia(NARROW).matches,
+  });
   drawLegend();
   window.addEventListener("hashchange", route);
   route();

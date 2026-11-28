@@ -271,7 +271,8 @@ window.StationScene = (function () {
 
   function build(locations) {
     const faces = [];
-    const anchors = {};
+    const anchors = {}; // where each location's numbered marker floats
+    const docks = {}; // the middle of each location's module, where ships fly in
     const spokeAngles = new Set();
 
     for (const loc of locations) {
@@ -292,6 +293,7 @@ window.StationScene = (function () {
 
       if (where.kind === "spire") {
         anchors[loc.id] = project(radial(where.angle, 104, where.level * SPIRE_LEN));
+        docks[loc.id] = anchors[loc.id];
         continue;
       }
 
@@ -303,6 +305,7 @@ window.StationScene = (function () {
       const type = loc.module || "block";
       const top = type === "none" ? 20 : moduleShape(faces, origin, f, type, scale, meta, rand);
       anchors[loc.id] = project(add(origin, [0, top + 34, 0]));
+      docks[loc.id] = project(add(origin, [0, 25 * scale, 0]));
     }
 
     claimSpireSections(faces, locations);
@@ -326,7 +329,7 @@ window.StationScene = (function () {
       minY = Math.min(minY, a.y - 30);
     }
 
-    return { faces: drawn, anchors, bounds: { minX, minY, maxX, maxY } };
+    return { faces: drawn, anchors, docks, bounds: { minX, minY, maxX, maxY } };
   }
 
   return { build };

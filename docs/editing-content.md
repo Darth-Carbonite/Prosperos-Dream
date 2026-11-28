@@ -103,6 +103,21 @@ Elite, well-armed and expensive...
 
 Every location, person and faction has its own link you can send to players: add `#the-court` (a location's id), `#person-sem` or `#faction-tempest-co` to the end of the site's address.
 
+## Ships: `content/ships/`
+
+Ships fly in from the edge of the map, dock at the Dry Dock for a while, and leave again. Each ship file needs a name and its classification:
+
+```markdown
+---
+name: "Delta Dawn"
+classification: Bas-Lehman Contessa J1C-III Jumpliner
+---
+```
+
+The name shows next to the ship's icon; hovering over a ship pauses it and shows its classification. The Roman numeral after the jump rating (`J1C-III` is Class III) sets the icon's size, so bigger ships look bigger. Put the name in quotes if it contains an apostrophe.
+
+To change how often ships come and go, edit the numbers in `TIMING` at the top of `site/ships.js`.
+
 ## Station overview: `content/station.md`
 
 The text and stats shown before anyone clicks a location.

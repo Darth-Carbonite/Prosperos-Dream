@@ -61,6 +61,7 @@ const locations = readFolder("locations").sort(
 );
 const people = readFolder("people");
 const factions = readFolder("factions");
+const ships = readFolder("ships");
 
 const stationFile = path.join(contentDir, "station.md");
 const stationParsed = matter(fs.readFileSync(stationFile, "utf8"));
@@ -145,6 +146,18 @@ for (const person of people) {
   checkRefs(person, "factions", "faction");
 }
 
+// Check ships. The hull class (the Roman numeral in a designation like
+// "J1C-III") sets the size of the ship's icon on the map.
+const ROMAN = { I: 1, II: 2, III: 3, IV: 4, V: 5 };
+for (const ship of ships) {
+  if (!ship.classification) {
+    fail(ship.file, "missing `classification:`, e.g. `classification: Bas-Lehman Contessa J1C-III Jumpliner`");
+    continue;
+  }
+  const match = String(ship.classification).match(/J\d+C-(I{1,3}|IV|V)\b/);
+  ship.hull_class = match ? ROMAN[match[1]] : 2;
+}
+
 // Check factions.
 for (const faction of factions) {
   checkRefs(faction, "base", "location");
@@ -196,6 +209,7 @@ const data = {
     factions: asList(p.factions),
   })),
   factions: factions.map((f) => ({ ...strip(f), base: f.base ?? null })),
+  ships: ships.map(({ id, name, classification, hull_class }) => ({ id, name, classification, hull_class })),
 };
 
 fs.rmSync(distDir, { recursive: true, force: true });
@@ -203,5 +217,5 @@ fs.cpSync(siteDir, distDir, { recursive: true });
 fs.writeFileSync(path.join(distDir, "data.json"), JSON.stringify(data, null, 2));
 
 console.log(
-  `Built dist/ with ${locations.length} locations, ${people.length} people and ${factions.length} factions.`
+  `Built dist/ with ${locations.length} locations, ${people.length} people, ${factions.length} factions and ${ships.length} ships.`
 );

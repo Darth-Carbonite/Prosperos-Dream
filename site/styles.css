@@ -250,6 +250,58 @@ a {
   stroke: var(--purple);
 }
 
+/* Ships flying to and from the Dry Dock */
+.ship {
+  cursor: default;
+}
+
+.ship-hit {
+  fill: transparent;
+}
+
+.ship-body {
+  fill: var(--hull);
+  stroke: var(--wire-bright);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.ship-engine {
+  fill: var(--purple);
+  opacity: 0.8;
+}
+
+.ship-name,
+.ship-class {
+  font-family: var(--display);
+  font-size: 19px;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.ship-name {
+  font-weight: 700;
+  fill: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.ship-class {
+  font-size: 17px;
+  fill: var(--purple);
+  visibility: hidden;
+}
+
+.ship.is-hover .ship-name {
+  fill: var(--text);
+}
+
+.ship.is-hover .ship-class {
+  visibility: visible;
+}
+
 .connection {
   stroke: var(--purple);
   stroke-width: 3;
@@ -325,6 +377,11 @@ a {
 @media (max-width: 600px) {
   .marker-label {
     display: none;
+  }
+  .ship-name,
+  .ship-class {
+    font-size: 26px;
+    stroke-width: 7px;
   }
   .marker-dot {
     r: 30px;
